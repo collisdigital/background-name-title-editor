@@ -210,7 +210,8 @@ export const useImageProcessor = (
     }
 
     // Create a temporary static canvas with original image dimensions
-    const tempCanvas = new fabric.StaticCanvas(null, {
+    const tempCanvasEl = document.createElement('canvas');
+    const tempCanvas = new fabric.StaticCanvas(tempCanvasEl, {
       width: originalImageDimensions.width,
       height: originalImageDimensions.height,
       renderOnAddRemove: false, // Optimize for static rendering
@@ -247,6 +248,7 @@ export const useImageProcessor = (
       const dataURL = tempCanvas.toDataURL({
         format: 'png',
         quality: 1, // Max quality
+        multiplier: 1,
       });
       const link = document.createElement('a');
       link.href = dataURL;
