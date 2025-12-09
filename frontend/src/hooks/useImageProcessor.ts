@@ -19,8 +19,8 @@ export const useImageProcessor = (
 
     if (!bgImage.width || !bgImage.height) return;
 
-    // Calculate Scale (Cover)
-    const scale = Math.max(
+    // Calculate Scale (Contain) - Ensure image is fully visible
+    const scale = Math.min(
       (canvas.width ?? 0) / bgImage.width,
       (canvas.height ?? 0) / bgImage.height
     );
