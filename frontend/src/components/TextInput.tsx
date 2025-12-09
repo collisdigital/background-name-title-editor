@@ -6,8 +6,8 @@ interface TextInputProps {
 
 const TextInput = ({ label, value, onChange }: TextInputProps) => {
   return (
-    <div className="my-4">
-      <label className="block text-lg font-medium mb-1" htmlFor={label}>
+    <div className="mb-6">
+      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2" htmlFor={label}>
         {label}
       </label>
       <input
@@ -15,7 +15,7 @@ const TextInput = ({ label, value, onChange }: TextInputProps) => {
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full p-2 rounded-md bg-gray-200 dark:bg-gray-700 border-transparent focus:border-blue-500 focus:ring-blue-500"
+        className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow text-gray-900 dark:text-gray-100 min-h-[44px]"
       />
     </div>
   );
