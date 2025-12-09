@@ -11,10 +11,6 @@ const HomePage = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { selectImage, updateText, downloadImage, imageLoadingError } = useImageProcessor(canvasRef);
 
-  useEffect(() => {
-    document.title = 'Virtual Background Editor';
-  }, []);
-
   const handleNameChange = (value: string) => {
     setName(value);
     updateText('name', value);
