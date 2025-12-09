@@ -6,12 +6,12 @@
 
 **Purpose**: Project initialization and basic structure.
 
-- [ ] T001 Initialize Vite project with React and TypeScript in `frontend/`.
-- [ ] T002 [P] Install and configure Tailwind CSS in `frontend/`.
-- [ ] T003 [P] Install Fabric.js in `frontend/`.
-- [ ] T004 [P] Install and configure Vitest in `frontend/`.
-- [ ] T005 [P] Install and configure Playwright in `frontend/`.
-- [ ] T006 Create project directory structure as per `plan.md` inside `frontend/`.
+- [X] T001 Initialize Vite project with React and TypeScript in `frontend/`.
+- [X] T002 [P] Install and configure Tailwind CSS in `frontend/`.
+- [X] T003 [P] Install Fabric.js in `frontend/`.
+- [X] T004 [P] Install and configure Vitest in `frontend/`.
+- [X] T005 [P] Install and configure Playwright in `frontend/`.
+- [X] T006 Create project directory structure as per `plan.md` inside `frontend/`.
 
 ---
 
@@ -19,10 +19,10 @@
 
 **Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented.
 
-- [ ] T007 Define data models in `frontend/src/config/backgrounds.ts` based on `data-model.md`.
-- [ ] T008 [P] Create basic layout and routing in `frontend/src/App.tsx`.
-- [ ] T009 [P] Add placeholder background images to `frontend/public/images/backgrounds/`.
-- [ ] T010 Create a configuration file in `frontend/src/config/backgrounds.ts` for the placeholder images, including their placeholder definitions.
+- [X] T007 Define data models in `frontend/src/config/backgrounds.ts` based on `data-model.md`.
+- [X] T008 [P] Create basic layout and routing in `frontend/src/App.tsx`.
+- [X] T009 [P] Add placeholder background images to `frontend/public/images/backgrounds/`.
+- [X] T010 Create a configuration file in `frontend/src/config/backgrounds.ts` for the placeholder images, including their placeholder definitions.
 
 ---
 
@@ -34,16 +34,16 @@
 
 ### Tests for User Story 1
 
-- [ ] T011 [P] [US1] Write unit/component tests for `ImageSelector`, `TextInput`, and `PreviewCanvas` in `frontend/tests/component/`.
-- [ ] T012 [US1] Write E2E test for selecting an image and entering text in `frontend/tests/e2e/`.
+- [X] T011 [P] [US1] Write unit/component tests for `ImageSelector`, `TextInput`, and `PreviewCanvas` in `frontend/tests/component/`.
+- [X] T012 [US1] Write E2E test for selecting an image and entering text in `frontend/tests/e2e/`.
 
 ### Implementation for User Story 1
 
-- [ ] T013 [P] [US1] Create `ImageSelector` component in `frontend/src/components/ImageSelector.tsx` to display and select background images.
-- [ ] T014 [P] [US1] Create `TextInput` component in `frontend/src/components/TextInput.tsx` for name and job title inputs.
-- [ ] T015 [US1] Create `PreviewCanvas` component in `frontend/src/components/PreviewCanvas.tsx` to display the selected image and text overlays.
-- [ ] T016 [US1] Implement `useImageProcessor` hook in `frontend/src/hooks/useImageProcessor.ts` to manage canvas state and text rendering using Fabric.js.
-- [ ] T017 [US1] Integrate components into the main page in `frontend/src/pages/HomePage.tsx`.
+- [X] T013 [P] [US1] Create `ImageSelector` component in `frontend/src/components/ImageSelector.tsx` to display and select background images.
+- [X] T014 [P] [US1] Create `TextInput` component in `frontend/src/components/TextInput.tsx` for name and job title inputs.
+- [X] T015 [US1] Create `PreviewCanvas` component in `frontend/src/components/PreviewCanvas.tsx` to display the selected image and text overlays.
+- [X] T016 [US1] Implement `useImageProcessor` hook in `frontend/src/hooks/useImageProcessor.ts` to manage canvas state and text rendering using Fabric.js.
+- [X] T017 [US1] Integrate components into the main page in `frontend/src/pages/HomePage.tsx`.
 
 ---
 
@@ -55,13 +55,13 @@
 
 ### Tests for User Story 2
 
-- [ ] T018 [P] [US2] Write unit/component test for the download functionality in `frontend/tests/component/`.
-- [ ] T019 [US2] Write E2E test for downloading the customized image in `frontend/tests/e2e/`.
+- [X] T018 [P] [US2] Write unit/component test for the download functionality in `frontend/tests/component/`.
+- [X] T019 [US2] Write E2E test for downloading the customized image in `frontend/tests/e2e/`.
 
 ### Implementation for User Story 2
 
-- [ ] T020 [US2] Add "Download" button to the main page in `frontend/src/pages/HomePage.tsx`.
-- [ ] T021 [US2] Implement download functionality in `useImageProcessor` hook in `frontend/src/hooks/useImageProcessor.ts` to export the canvas as an image.
+- [X] T020 [US2] Add "Download" button to the main page in `frontend/src/pages/HomePage.tsx`.
+- [X] T021 [US2] Implement download functionality in `useImageProcessor` hook in `frontend/src/hooks/useImageProcessor.ts` to export the canvas as an image.
 
 ---
 
@@ -73,11 +73,11 @@
 
 ### Tests for User Story 3
 
-- [ ] T022 [P] [US3] Write unit/component test for the configuration-based image loading in `frontend/tests/component/`.
+- [X] T022 [P] [US3] Write unit/component test for the configuration-based image loading in `frontend/tests/component/`.
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] Refactor image loading to use the configuration file from `frontend/src/config/backgrounds.ts`.
+- [X] T023 [US3] Refactor image loading to use the configuration file from `frontend/src/config/backgrounds.ts`.
 
 ---
 
@@ -85,8 +85,8 @@
 
 **Purpose**: Improvements that affect multiple user stories.
 
-- [ ] T024 [P] Implement responsive design for different screen sizes.
-- [ ] T025 [P] Add accessibility features (e.g., ARIA attributes, keyboard navigation).
-- [ ] T026 [P] Add comprehensive error handling and user feedback.
-- [ ] T027 [P] Update `README.md` with detailed project information.
+- [X] T024 [P] Implement responsive design for different screen sizes.
+- [X] T025 [P] Add accessibility features (e.g., ARIA attributes, keyboard navigation).
+- [X] T026 [P] Add comprehensive error handling and user feedback.
+- [X] T027 [P] Update `README.md` with detailed project information.
 - [ ] T028 [P] Perform final cross-browser testing.
