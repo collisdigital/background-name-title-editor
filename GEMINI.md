@@ -3,6 +3,8 @@
 Auto-generated from all feature plans. Last updated: 2025-12-08
 
 ## Active Technologies
+- TypeScript 5.x + React 18 (using Vite) + Tailwind CSS 3.x, Fabric.js 5.x (for canvas) (002-improve-ui-ux)
+- N/A (Client-side only) (002-improve-ui-ux)
 
 - TypeScript 5.x + React 18 (using Vite), Fabric.js 5.x, Tailwind CSS 3.x (001-virtual-bg-editor)
 
@@ -22,6 +24,8 @@ npm test && npm run lint
 TypeScript 5.x: Follow standard conventions
 
 ## Recent Changes
+- 002-improve-ui-ux: Added TypeScript 5.x + React 18 (using Vite) + Tailwind CSS 3.x, Fabric.js 5.x (for canvas)
+- 002-improve-ui-ux: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 
 - 001-virtual-bg-editor: Added TypeScript 5.x + React 18 (using Vite), Fabric.js 5.x, Tailwind CSS 3.x
 

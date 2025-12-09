@@ -26,32 +26,36 @@ const HomePage = () => {
       <header className="py-4">
         <h1 className="text-2xl md:text-4xl font-bold">Virtual Background Editor</h1>
       </header>
-      <main className="flex flex-col md:flex-row gap-4 md:gap-8 p-4 md:p-8 w-full">
-        <div className="w-full md:w-1/4">
-          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-            <h2 className="text-2xl font-semibold mb-4">Controls</h2>
+      <main className="flex flex-col-reverse md:flex-row gap-4 md:gap-8 p-4 md:p-8 w-full max-w-7xl mx-auto">
+        <div className="w-full md:w-1/3 lg:w-1/4">
+          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md space-y-4">
+            <h2 className="text-xl font-semibold mb-4">Controls</h2>
             {imageLoadingError && (
               <p className="text-red-500 text-sm mb-2">{imageLoadingError}</p>
             )}
             <ImageSelector backgrounds={backgrounds} onSelect={selectImage} />
-            <TextInput label="Name" value={name} onChange={handleNameChange} />
-            <TextInput
-              label="Job Title"
-              value={jobTitle}
-              onChange={handleJobTitleChange}
-            />
+            <div className="space-y-4">
+              <TextInput label="Name" value={name} onChange={handleNameChange} />
+              <TextInput
+                label="Job Title"
+                value={jobTitle}
+                onChange={handleJobTitleChange}
+              />
+            </div>
             <button
               onClick={downloadImage}
-              className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              className="w-full mt-6 px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
             >
               Download Image
             </button>
           </div>
         </div>
-        <div className="w-full md:w-3/4">
-          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
-            <h2 className="text-2xl font-semibold mb-4">Preview</h2>
-            <PreviewCanvas ref={canvasRef} />
+        <div className="w-full md:w-2/3 lg:w-3/4">
+          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md h-full flex flex-col">
+            <h2 className="text-xl font-semibold mb-4">Preview</h2>
+            <div className="flex-grow flex items-center justify-center bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+               <PreviewCanvas ref={canvasRef} />
+            </div>
           </div>
         </div>
       </main>

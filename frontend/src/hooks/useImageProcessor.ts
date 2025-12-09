@@ -20,25 +20,42 @@ export const useImageProcessor = (
 
       const resizeObserver = new ResizeObserver(() => {
         if (fabricCanvas.current && canvasRef.current) {
-          fabricCanvas.current.setDimensions({
-            width: canvasRef.current.clientWidth,
-            height: canvasRef.current.clientHeight,
-          });
-          if (fabricCanvas.current.backgroundImage) {
-            const img = fabricCanvas.current.backgroundImage;
-            const canvas = fabricCanvas.current;
-            const scaleX = (canvas.width ?? 0) / (img.width ?? 1);
-            const scaleY = (canvas.height ?? 0) / (img.height ?? 1);
-            img.set({
-              scaleX: scaleX,
-              scaleY: scaleY,
-            });
-          }
-          fabricCanvas.current.renderAll();
+           requestAnimationFrame(() => {
+             if (!fabricCanvas.current || !canvasRef.current) return;
+             
+             // Get the parent container dimensions instead of the canvas itself to avoid feedback loops
+             const parent = canvasRef.current.parentElement;
+             if (!parent) return;
+             
+             const width = parent.clientWidth;
+             const height = parent.clientHeight;
+
+             fabricCanvas.current.setDimensions({
+               width: width,
+               height: height,
+             });
+             
+             if (fabricCanvas.current.backgroundImage) {
+               const img = fabricCanvas.current.backgroundImage;
+               const canvas = fabricCanvas.current;
+               // Scale to cover the canvas while maintaining aspect ratio
+               const scale = Math.max((canvas.width ?? 0) / (img.width ?? 1), (canvas.height ?? 0) / (img.height ?? 1));
+               
+               img.set({
+                 scaleX: scale,
+                 scaleY: scale,
+                 left: (canvas.width ?? 0) / 2,
+                 top: (canvas.height ?? 0) / 2,
+                 originX: 'center',
+                 originY: 'center'
+               });
+             }
+             fabricCanvas.current.renderAll();
+           });
         }
       });
 
-      resizeObserver.observe(canvasRef.current);
+      resizeObserver.observe(canvasRef.current.parentElement || canvasRef.current);
 
       return () => {
         fabricCanvas.current?.dispose();
@@ -87,11 +104,18 @@ export const useImageProcessor = (
       if (!fabricCanvas.current) return;
 
       const canvas = fabricCanvas.current;
-      const scaleX = (canvas.width ?? 0) / (img.width ?? 1);
-      const scaleY = (canvas.height ?? 0) / (img.height ?? 1);
+      
+      // Scale to cover the canvas while maintaining aspect ratio
+      const scale = Math.max((canvas.width ?? 0) / (img.width ?? 1), (canvas.height ?? 0) / (img.height ?? 1));
 
-      img.scaleX = scaleX;
-      img.scaleY = scaleY;
+      img.set({
+          scaleX: scale,
+          scaleY: scale,
+          left: (canvas.width ?? 0) / 2,
+          top: (canvas.height ?? 0) / 2,
+          originX: 'center',
+          originY: 'center'
+      });
 
       canvas.backgroundImage = img;
       canvas.requestRenderAll();

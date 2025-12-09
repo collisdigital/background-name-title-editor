@@ -7,8 +7,8 @@ test('download a customized image', async ({ page }) => {
   await page.getByRole('button', { name: /Select .* as background/ }).first().click();
 
   // Enter name and job title
-  await page.getByLabelText('Name').fill('Jane Doe');
-  await page.getByLabelText('Job Title').fill('Product Manager');
+  await page.getByLabel('Name').fill('Jane Doe');
+  await page.getByLabel('Job Title').fill('Product Manager');
 
   // Click the download button and wait for the download
   const [download] = await Promise.all([
