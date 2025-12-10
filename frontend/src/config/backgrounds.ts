@@ -41,7 +41,7 @@ export interface BackgroundImage {
 }
 
 // Helper to create standard placeholders
-const createPlaceholders = (
+export const createPlaceholders = (
   nameX: number,
   nameY: number,
   titleX: number,
@@ -73,7 +73,7 @@ const createPlaceholders = (
 ];
 
 // Helper to create logo config
-const createLogoConfig = (
+export const createLogoConfig = (
   x: number,
   y: number,
   overrides: Partial<LogoConfig> = {}
