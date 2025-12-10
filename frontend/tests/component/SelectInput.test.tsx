@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import SelectInput from '../../src/components/SelectInput';
 
@@ -36,13 +37,14 @@ describe('SelectInput', () => {
       />
     );
     
-    const select = screen.getByLabelText('Letters');
-    expect(screen.getByText('Alpha')).toBeInTheDocument();
-    expect(screen.getByText('Beta')).toBeInTheDocument();
+    // Check that options are rendered
+    expect(screen.getByRole('option', { name: 'Alpha' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Beta' })).toBeInTheDocument();
   });
 
-  it('calls onChange when selection changes', () => {
+  it('calls onChange when selection changes', async () => {
     const handleChange = vi.fn();
+    const user = userEvent.setup();
     const options = [
       { value: 'yes', label: 'Yes' },
       { value: 'no', label: 'No' },
@@ -57,7 +59,8 @@ describe('SelectInput', () => {
     );
     
     const select = screen.getByLabelText('Confirmation');
-    fireEvent.change(select, { target: { value: 'no' } });
+    await user.selectOptions(select, 'no');
+    
     expect(handleChange).toHaveBeenCalledWith('no');
   });
 });
