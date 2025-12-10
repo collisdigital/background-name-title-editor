@@ -1,9 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import * as fabric from 'fabric';
-import { BackgroundImage, Placeholder } from '../config/backgrounds';
+import { BackgroundImage, Placeholder, LogoConfig } from '../config/backgrounds';
 
-interface FabricObjectWithPlaceholder extends fabric.Object {
+interface FabricObjectWithConfig extends fabric.Object {
   _placeholder?: Placeholder;
+  _logoConfig?: LogoConfig;
+}
+
+interface FabricCanvasElement extends HTMLCanvasElement {
+  __fabric?: fabric.Canvas;
 }
 
 export const useImageProcessor = (
@@ -15,6 +20,7 @@ export const useImageProcessor = (
   );
   const [originalImageDimensions, setOriginalImageDimensions] = useState<{ width: number; height: number } | null>(null);
   const [imageLoadingError, setImageLoadingError] = useState<string | null>(null);
+  const [cymraegStatus, setCymraegStatus] = useState<'None' | 'Learner' | 'Fluent'>('None');
 
   const updateLayout = useCallback(() => {
     if (!fabricCanvas.current?.backgroundImage) return;
@@ -45,17 +51,12 @@ export const useImageProcessor = (
     const imgLeft = (canvas.width ?? 0) / 2 - (bgImage.width * scale) / 2;
     const imgTop = (canvas.height ?? 0) / 2 - (bgImage.height * scale) / 2;
 
-    // Update Text Objects
+    // Update Objects (Text and Logo)
     canvas.getObjects().forEach((obj) => {
-      // Find the placeholder config for this text object
-      // We assume selectedImage is current because objects are cleared on image selection?
-      // Actually we need to access the current selectedImage state. 
-      // But we can't easily access state inside this callback if it's stale.
-      // We can attach the original placeholder config to the object itself!
-      const placeholder = (obj as FabricObjectWithPlaceholder)._placeholder;
-      if (placeholder) {
-        // Reset scale to 1 and calculate properties directly for the current canvas scale
-        // This ensures wrapping (width) and font size behave consistently without transform artifacts
+      const fabricObj = obj as FabricObjectWithConfig;
+      
+      if (fabricObj._placeholder) {
+        const placeholder = fabricObj._placeholder;
         obj.set({
           left: imgLeft + placeholder.x * scale,
           top: imgTop + placeholder.y * scale,
@@ -65,23 +66,55 @@ export const useImageProcessor = (
           scaleY: 1,
         });
         obj.setCoords();
+      } else if (fabricObj._logoConfig) {
+        const logoConfig = fabricObj._logoConfig;
+        
+        if ((obj as any).name === 'cymraeg-text') {
+             const xOffset = logoConfig.textXOffset * scale;
+             const yOffset = logoConfig.textYOffset * scale;
+             const baseFontSize = logoConfig.fontSize;
+             obj.set({
+                 left: imgLeft + (logoConfig.x + logoConfig.width) * scale + xOffset,
+                 top: imgTop + logoConfig.y * scale + yOffset,
+                 fontSize: baseFontSize * scale,
+                 scaleX: 1,
+                 scaleY: 1,
+             });
+             obj.setCoords();
+        } else {
+            // Check for obj.width to be safe, though images usually have it
+            if (obj.width) {
+               const logoScale = (logoConfig.width * scale) / obj.width;
+               obj.set({
+                 left: imgLeft + logoConfig.x * scale,
+                 top: imgTop + logoConfig.y * scale,
+                 scaleX: logoScale,
+                 scaleY: logoScale,
+               });
+               obj.setCoords();
+            }
+        }
       }
     });
 
     canvas.requestRenderAll();
-  }, []); // We might need to depend on selectedImage if we used it, but attaching _placeholder is safer.
+  }, []); 
 
   useEffect(() => {
-    if (canvasRef.current) {
-      fabricCanvas.current = new fabric.Canvas(canvasRef.current, {
-        width: canvasRef.current.clientWidth,
-        height: canvasRef.current.clientHeight,
+    const canvasElement = canvasRef.current;
+    if (canvasElement) {
+      fabricCanvas.current = new fabric.Canvas(canvasElement, {
+        width: canvasElement.clientWidth,
+        height: canvasElement.clientHeight,
       });
 
+      // Expose fabric instance for E2E testing
+      (canvasElement as FabricCanvasElement).__fabric = fabricCanvas.current;
+
       const resizeObserver = new ResizeObserver(() => {
-        if (fabricCanvas.current && canvasRef.current) {
+        if (fabricCanvas.current && canvasElement) {
           requestAnimationFrame(() => {
-            if (!fabricCanvas.current || !canvasRef.current) return;
+            if (!fabricCanvas.current || !canvasElement) return;
 
             // Find the responsive container by ID
             const container = document.getElementById('preview-container');
@@ -106,10 +139,13 @@ export const useImageProcessor = (
         resizeObserver.observe(container);
       } else {
         // Fallback if ID isn't found immediately (though it should be)
-        resizeObserver.observe(canvasRef.current.parentElement ?? canvasRef.current);
+        resizeObserver.observe(canvasElement.parentElement ?? canvasElement);
       }
 
       return () => {
+        if (canvasElement) {
+            delete (canvasElement as FabricCanvasElement).__fabric;
+        }
         fabricCanvas.current?.dispose();
         resizeObserver.disconnect();
       };
@@ -132,10 +168,6 @@ export const useImageProcessor = (
       canvas.remove(existingObject);
     }
 
-    // We create the text object initially. 
-    // We need to calculate its initial position correctly.
-    // We can reuse updateLayout logic or just force an update.
-    
     // Create text object with temporary coordinates
     const textObject = new fabric.Textbox(text, {
       fontFamily: placeholder.font,
@@ -146,7 +178,7 @@ export const useImageProcessor = (
     });
     
     // Attach placeholder config to the object for future updates
-    (textObject as FabricObjectWithPlaceholder)._placeholder = placeholder;
+    (textObject as FabricObjectWithConfig)._placeholder = placeholder;
 
     canvas.add(textObject);
     
@@ -154,8 +186,61 @@ export const useImageProcessor = (
     updateLayout();
   };
 
+  const addLogoToCanvasInternal = async (canvas: fabric.Canvas, logoConfig: LogoConfig, status: 'Learner' | 'Fluent') => {
+      const baseUrl = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
+      const logoUrl = `${baseUrl}images/overlays/logo-cymraeg.png`;
+      try {
+        const logoImg = await fabric.FabricImage.fromURL(logoUrl, { crossOrigin: 'anonymous' });
+
+        logoImg.set({
+            name: 'cymraeg-logo',
+            originX: 'left',
+            originY: 'top',
+        });
+        (logoImg as FabricObjectWithConfig)._logoConfig = logoConfig;
+        canvas.add(logoImg);
+
+        // Add text
+        const textContent = status === 'Learner' ? "Dysgwyr\nLearner" : "Rhugl\nFluent";
+        const textObj = new fabric.Textbox(textContent, {
+            name: 'cymraeg-text',
+            fontFamily: logoConfig.font, 
+            fill: logoConfig.fill,
+            textAlign: logoConfig.textAlign as 'left' | 'center' | 'right' | 'justify',
+            originX: 'left',
+            originY: 'top',
+            lineHeight: 1.1,
+        });
+        (textObj as FabricObjectWithConfig)._logoConfig = logoConfig;
+        canvas.add(textObj);
+
+      } catch (e) {
+        console.error("Failed to load logo", e);
+      }
+  };
+
+  const updateCymraegStatus = async (status: 'None' | 'Learner' | 'Fluent') => {
+      setCymraegStatus(status);
+      if (!fabricCanvas.current || !selectedImage) return;
+
+      const canvas = fabricCanvas.current;
+      const existingLogo = canvas.getObjects().find(obj => (obj as any).name === 'cymraeg-logo');
+      const existingText = canvas.getObjects().find(obj => (obj as any).name === 'cymraeg-text');
+      
+      if (existingLogo) canvas.remove(existingLogo);
+      if (existingText) canvas.remove(existingText);
+
+      if (status !== 'None' && selectedImage.logoConfig) {
+          await addLogoToCanvasInternal(canvas, selectedImage.logoConfig, status);
+          updateLayout();
+      } else {
+          canvas.requestRenderAll();
+      }
+  };
+
   const selectImage = async (image: BackgroundImage, textValues: Record<string, string> = {}) => {
-                      setSelectedImage(image);    if (!fabricCanvas.current) return;
+    setSelectedImage(image);
+    if (!fabricCanvas.current) return;
 
     try {
       // Clear existing objects (text) when changing background
@@ -171,14 +256,12 @@ export const useImageProcessor = (
       canvas.backgroundImage = img;
 
       setOriginalImageDimensions({ width: img.width, height: img.height });
-      setSelectedImage(image);
+      // update state is async, so we use 'image' argument for logic below
       
       updateLayout();
 
       // Re-add text objects if values are provided
       Object.entries(textValues).forEach(([id, text]) => {
-        // We need to use the NEW selectedImage context, but state update is async.
-        // So we must rely on the 'image' argument passed to this function, not 'selectedImage' state.
         const placeholder = image.placeholders.find((p) => p.id === id);
         if (!placeholder) return;
 
@@ -190,9 +273,14 @@ export const useImageProcessor = (
           name: id,
         });
         
-        (textObject as FabricObjectWithPlaceholder)._placeholder = placeholder;
+        (textObject as FabricObjectWithConfig)._placeholder = placeholder;
         canvas.add(textObject);
       });
+
+      // Re-add logo if status is set
+      if (cymraegStatus !== 'None' && image.logoConfig) {
+          await addLogoToCanvasInternal(canvas, image.logoConfig, cymraegStatus);
+      }
 
       // Layout again to position new text objects correctly
       updateLayout();
@@ -224,8 +312,9 @@ export const useImageProcessor = (
 
       // Add all text objects from the interactive canvas to the temporary canvas
       fabricCanvas.current.getObjects().forEach((obj) => {
-        const placeholder = (obj as FabricObjectWithPlaceholder)._placeholder;
-        if (placeholder) {
+        const fabricObj = obj as FabricObjectWithConfig;
+        if (fabricObj._placeholder) {
+          const placeholder = fabricObj._placeholder;
           const textObject = new fabric.Textbox((obj as fabric.Textbox).text ?? '', {
             fontFamily: placeholder.font,
             fontSize: placeholder.fontSize,
@@ -240,6 +329,41 @@ export const useImageProcessor = (
           tempCanvas.add(textObject);
         }
       });
+
+      // Add Logo for download
+      if (cymraegStatus !== 'None' && selectedImage.logoConfig) {
+           const baseUrl = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
+           const logoUrl = `${baseUrl}images/overlays/logo-cymraeg.png`;
+           const logoImg = await fabric.FabricImage.fromURL(logoUrl, { crossOrigin: 'anonymous' });
+           const config = selectedImage.logoConfig;
+           
+           logoImg.set({
+               left: config.x,
+               top: config.y,
+               scaleX: config.width / logoImg.width!,
+               scaleY: config.width / logoImg.width!,
+               originX: 'left',
+               originY: 'top',
+           });
+           tempCanvas.add(logoImg);
+
+           // Add Cymraeg Text
+           const textContent = cymraegStatus === 'Learner' ? "Dysgwyr\nLearner" : "Rhugl\nFluent";
+           const baseFontSize = config.fontSize; 
+
+           const textObj = new fabric.Textbox(textContent, {
+                fontFamily: config.font,
+                fontSize: baseFontSize,
+                fill: config.fill,
+                textAlign: config.textAlign as 'left' | 'center' | 'right' | 'justify',
+                left: config.x + config.width + config.textXOffset, 
+                top: config.y + config.textYOffset,
+                originX: 'left',
+                originY: 'top',
+                lineHeight: 1.1,
+           });
+           tempCanvas.add(textObj);
+      }
       
       // Render all objects on the temporary canvas
       tempCanvas.renderAll();
@@ -262,5 +386,5 @@ export const useImageProcessor = (
     }
   };
 
-  return { selectImage, updateText, downloadImage, imageLoadingError };
+  return { selectImage, updateText, downloadImage, imageLoadingError, updateCymraegStatus, cymraegStatus };
 };

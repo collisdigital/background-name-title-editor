@@ -2,6 +2,7 @@ import { useState, useRef, useMemo } from 'react';
 import ImageSelector from '../components/ImageSelector';
 import PreviewCanvas from '../components/PreviewCanvas';
 import TextInput from '../components/TextInput';
+import SelectInput from '../components/SelectInput';
 import { backgrounds } from '../config/backgrounds';
 import { useImageProcessor } from '../hooks/useImageProcessor';
 
@@ -9,7 +10,7 @@ const HomePage = () => {
   const [name, setName] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { selectImage, updateText, downloadImage, imageLoadingError } = useImageProcessor(canvasRef);
+  const { selectImage, updateText, downloadImage, imageLoadingError, updateCymraegStatus, cymraegStatus } = useImageProcessor(canvasRef);
 
   const backgroundsWithBaseUrl = useMemo(() => {
     return backgrounds.map((bg) => ({
@@ -47,6 +48,16 @@ const HomePage = () => {
                 label="Job Title"
                 value={jobTitle}
                 onChange={handleJobTitleChange}
+              />
+              <SelectInput
+                label="Cymraeg"
+                value={cymraegStatus}
+                options={[
+                  { value: 'None', label: 'None' },
+                  { value: 'Learner', label: 'Learner' },
+                  { value: 'Fluent', label: 'Fluent' },
+                ]}
+                onChange={(val) => updateCymraegStatus(val as 'None' | 'Learner' | 'Fluent')}
               />
             </div>
             <button

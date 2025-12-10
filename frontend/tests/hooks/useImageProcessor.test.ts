@@ -1,5 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useImageProcessor } from '../../src/hooks/useImageProcessor';
 
 const { 
@@ -8,7 +8,8 @@ const {
   mockCanvasRemove, 
   mockCanvasRenderAll, 
   mockRequestRenderAll, 
-  mockGetObjects 
+  mockGetObjects,
+  mockFabricImageFromURL
 } = vi.hoisted(() => ({
   mockSet: vi.fn(),
   mockCanvasAdd: vi.fn(),
@@ -16,9 +17,8 @@ const {
   mockCanvasRenderAll: vi.fn(),
   mockRequestRenderAll: vi.fn(),
   mockGetObjects: vi.fn().mockReturnValue([]),
+  mockFabricImageFromURL: vi.fn(),
 }));
-
-
 
 vi.mock('fabric', () => {
   return {
@@ -36,22 +36,18 @@ vi.mock('fabric', () => {
       clear = vi.fn();
     },
     FabricImage: {
-      fromURL: vi.fn().mockResolvedValue({
-         set: mockSet,
-         width: 2000,
-         height: 1000
-      }),
+      fromURL: mockFabricImageFromURL,
     },
     Textbox: class {
-      constructor(text: string, options: fabric.ITextboxOptions) {
-        (this as fabric.Textbox).text = text;
+      constructor(text: string, options: any) {
+        (this as any).text = text;
         Object.assign(this, options);
       }
       set = mockSet;
       setCoords = vi.fn();
     },
     StaticCanvas: class {
-      constructor(el: HTMLCanvasElement | null, options: fabric.ICanvasOptions) {
+      constructor(el: HTMLCanvasElement | null, options: any) {
         Object.assign(this, options);
       }
       dispose = vi.fn();
@@ -67,11 +63,19 @@ vi.mock('fabric', () => {
 });
 
 describe('useImageProcessor', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockFabricImageFromURL.mockResolvedValue({
+         set: mockSet,
+         width: 2000,
+         height: 1000
+    });
+    mockGetObjects.mockReturnValue([]);
+  });
+
   it('should trigger a download when downloadImage is called', async () => {
     const canvasEl = document.createElement('canvas');
-    const canvasRef = {
-      current: canvasEl,
-    };
+    const canvasRef = { current: canvasEl };
 
     const linkMock = document.createElement('a');
     const linkClickSpy = vi.spyOn(linkMock, 'click');
@@ -79,7 +83,6 @@ describe('useImageProcessor', () => {
 
     const { result } = renderHook(() => useImageProcessor(canvasRef));
 
-    // Simulate image selection to set selectedImage state
     const mockImageConfig = {
       id: '1',
       name: 'Test BG',
@@ -92,7 +95,6 @@ describe('useImageProcessor', () => {
       await result.current.selectImage(mockImageConfig);
     });
 
-    // Now call downloadImage and await it
     await act(async () => {
       await result.current.downloadImage();
     });
@@ -104,13 +106,9 @@ describe('useImageProcessor', () => {
 
   it('should scale image correctly on selectImage', async () => {
     const canvasEl = document.createElement('canvas');
-    // Mock parent element for resize observer logic if needed, but selectImage uses canvas dimensions
     Object.defineProperty(canvasEl, 'clientWidth', { value: 1000 });
     Object.defineProperty(canvasEl, 'clientHeight', { value: 500 });
-    
-    const canvasRef = {
-      current: canvasEl,
-    };
+    const canvasRef = { current: canvasEl };
 
     const { result } = renderHook(() => useImageProcessor(canvasRef));
 
@@ -127,16 +125,102 @@ describe('useImageProcessor', () => {
       await result.current.selectImage(mockImageConfig);
     });
 
-    // Image is 2000x1000, Canvas is 1000x500. Scale should be 0.5.
-    // However, logic uses Math.max(canvasW/imgW, canvasH/imgH).
-    // 1000/2000 = 0.5. 500/1000 = 0.5. Max is 0.5.
-    
-    // Check if set was called with expected scale on the image
     expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({
       scaleX: 0.5,
       scaleY: 0.5,
       originX: 'center',
       originY: 'center',
     }));
+  });
+
+  it('should add logo when cymraegStatus is updated', async () => {
+    const canvasEl = document.createElement('canvas');
+    const canvasRef = { current: canvasEl };
+    const { result } = renderHook(() => useImageProcessor(canvasRef));
+
+    const mockImageConfig = {
+      id: '1',
+      name: 'Test BG',
+      src: 'test.png',
+      placeholders: [],
+      logoConfig: { x: 100, y: 100, width: 50 }
+    };
+
+    await act(async () => {
+      await result.current.selectImage(mockImageConfig);
+    });
+
+    // Clear previous calls (from selectImage)
+    mockSet.mockClear();
+    mockCanvasAdd.mockClear();
+
+    await act(async () => {
+      await result.current.updateCymraegStatus('Learner');
+    });
+
+    // Check if set was called with logo name
+    expect(mockSet).toHaveBeenCalledWith(expect.objectContaining({
+      name: 'cymraeg-logo'
+    }));
+    // Check if canvas.add was called
+    expect(mockCanvasAdd).toHaveBeenCalled();
+  });
+
+  it('should remove existing logo before adding new one', async () => {
+    const canvasEl = document.createElement('canvas');
+    const canvasRef = { current: canvasEl };
+    const { result } = renderHook(() => useImageProcessor(canvasRef));
+
+    const mockImageConfig = {
+      id: '1',
+      name: 'Test BG',
+      src: 'test.png',
+      placeholders: [],
+      logoConfig: { x: 100, y: 100, width: 50 }
+    };
+
+    await act(async () => {
+      await result.current.selectImage(mockImageConfig);
+    });
+
+    // Mock an existing logo object
+    const existingLogo = { name: 'cymraeg-logo' };
+    mockGetObjects.mockReturnValue([existingLogo]);
+
+    await act(async () => {
+      await result.current.updateCymraegStatus('Fluent');
+    });
+
+    expect(mockCanvasRemove).toHaveBeenCalledWith(existingLogo);
+    expect(mockCanvasAdd).toHaveBeenCalled(); // Adds the new one
+  });
+
+  it('should just remove logo if status is None', async () => {
+    const canvasEl = document.createElement('canvas');
+    const canvasRef = { current: canvasEl };
+    const { result } = renderHook(() => useImageProcessor(canvasRef));
+    const mockImageConfig = {
+        id: '1',
+        name: 'Test BG',
+        src: 'test.png',
+        placeholders: [],
+        logoConfig: { x: 100, y: 100, width: 50 }
+    };
+    await act(async () => {
+        await result.current.selectImage(mockImageConfig);
+    });
+
+    // Mock an existing logo object
+    const existingLogo = { name: 'cymraeg-logo' };
+    mockGetObjects.mockReturnValue([existingLogo]);
+    // Clear adds from selectImage
+    mockCanvasAdd.mockClear();
+
+    await act(async () => {
+      await result.current.updateCymraegStatus('None');
+    });
+
+    expect(mockCanvasRemove).toHaveBeenCalledWith(existingLogo);
+    expect(mockCanvasAdd).not.toHaveBeenCalled();
   });
 });
