@@ -25,9 +25,9 @@ const ImageSelector = ({ backgrounds, onSelect }: ImageSelectorProps) => {
       id: `user-upload-${Date.now()}`,
       name: file.name,
       src: objectUrl,
-      // Default to center-ish positions for typical 16:9 images
-      placeholders: createPlaceholders(960, 500, 960, 650, { textAlign: 'center' }),
-      logoConfig: createLogoConfig(1700, 900),
+      // Place in top-left corner, user can drag them to the best position
+      placeholders: createPlaceholders(0, 0, 0, 0),
+      logoConfig: createLogoConfig(0, 0),
     };
 
     setCustomBackgrounds((prev) => [newBackground, ...prev]);
@@ -68,7 +68,6 @@ const ImageSelector = ({ backgrounds, onSelect }: ImageSelectorProps) => {
             className="flex flex-col items-center justify-center w-full aspect-video rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500 bg-gray-50 dark:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
             aria-label="Upload custom background"
           >
-            <span className="text-2xl mb-1">➕</span>
             <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Add New</span>
           </button>
         )}
