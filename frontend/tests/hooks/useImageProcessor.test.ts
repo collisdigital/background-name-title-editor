@@ -223,4 +223,69 @@ describe('useImageProcessor', () => {
     expect(mockCanvasRemove).toHaveBeenCalledWith(existingLogo);
     expect(mockCanvasAdd).not.toHaveBeenCalled();
   });
+
+  it('should update existing text object without removing it', async () => {
+    const canvasEl = document.createElement('canvas');
+    const canvasRef = { current: canvasEl };
+    const { result } = renderHook(() => useImageProcessor(canvasRef));
+
+    const mockImageConfig = {
+      id: '1',
+      name: 'Test BG',
+      src: 'test.png',
+      placeholders: [
+          { id: 'name', x: 0, y: 0, width: 100, font: 'Arial', fontSize: 20, fill: 'black', textAlign: 'left' as const }
+      ],
+    };
+    await act(async () => {
+        await result.current.selectImage(mockImageConfig);
+    });
+
+    // Mock existing object
+    const existingTextObj = { name: 'name', set: vi.fn() };
+    mockGetObjects.mockReturnValue([existingTextObj]);
+    mockCanvasAdd.mockClear();
+    mockCanvasRemove.mockClear();
+
+    await act(async () => {
+       result.current.updateText('name', 'New Text');
+    });
+
+    expect(existingTextObj.set).toHaveBeenCalledWith({ text: 'New Text' });
+    expect(mockCanvasRemove).not.toHaveBeenCalled();
+    expect(mockCanvasAdd).not.toHaveBeenCalled();
+  });
+
+  it('should update existing logo text without removing objects', async () => {
+    const canvasEl = document.createElement('canvas');
+    const canvasRef = { current: canvasEl };
+    const { result } = renderHook(() => useImageProcessor(canvasRef));
+
+    const mockImageConfig = {
+      id: '1',
+      name: 'Test BG',
+      src: 'test.png',
+      placeholders: [],
+      logoConfig: { x: 100, y: 100, width: 50 }
+    };
+    await act(async () => {
+        await result.current.selectImage(mockImageConfig);
+    });
+
+    // Mock existing objects
+    const existingLogo = { name: 'cymraeg-logo' };
+    const existingText = { name: 'cymraeg-text', set: vi.fn() };
+    mockGetObjects.mockReturnValue([existingLogo, existingText]);
+    
+    mockCanvasAdd.mockClear();
+    mockCanvasRemove.mockClear();
+
+    await act(async () => {
+      await result.current.updateCymraegStatus('Fluent');
+    });
+
+    expect(existingText.set).toHaveBeenCalledWith(expect.objectContaining({ text: expect.stringContaining('Fluent') }));
+    expect(mockCanvasRemove).not.toHaveBeenCalled();
+    expect(mockCanvasAdd).not.toHaveBeenCalled();
+  });
 });

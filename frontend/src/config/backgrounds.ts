@@ -41,7 +41,7 @@ export interface BackgroundImage {
 }
 
 // Helper to create standard placeholders
-const createPlaceholders = (
+export const createPlaceholders = (
   nameX: number,
   nameY: number,
   titleX: number,
@@ -73,7 +73,7 @@ const createPlaceholders = (
 ];
 
 // Helper to create logo config
-const createLogoConfig = (
+export const createLogoConfig = (
   x: number,
   y: number,
   overrides: Partial<LogoConfig> = {}
@@ -96,14 +96,14 @@ export const backgrounds: BackgroundImage[] = [
     name: 'Normal Dark 2024',
     src: '/images/backgrounds/DHCWTeamsBackground-2024-Dark.png',
     placeholders: createPlaceholders(744, 430, 744, 585),
-    logoConfig: createLogoConfig(3200, 1650),
+    logoConfig: createLogoConfig(3250, 1650),
   },
   {
     id: '2',
     name: 'Normal Light 2024',
     src: '/images/backgrounds/DHCWTeamsBackground-2024-Light.png',
     placeholders: createPlaceholders(744, 430, 744, 585, { fill: '#325083' }),
-    logoConfig: createLogoConfig(3200, 1650, { fill: '#325083' }),
+    logoConfig: createLogoConfig(3250, 1650, { fill: '#325083' }),
   },
   {
     id: '3',
@@ -124,13 +124,13 @@ export const backgrounds: BackgroundImage[] = [
     name: 'Christmas 2024',
     src: '/images/backgrounds/DHCWTeamsBackground-2024-Christmas.png',
     placeholders: createPlaceholders(744, 160, 744, 300, { width: 2000 }),
-    logoConfig: createLogoConfig(3200, 1650),
+    logoConfig: createLogoConfig(3430, 1650, { textAlign: 'right' }),
   },
   {
     id: '6',
     name: 'Christmas 2025',
     src: '/images/backgrounds/DHCWTeamsBackground-2025-Christmas.png',
-    placeholders: createPlaceholders(3000, 1180, 3000, 1300, { width: 900 }),
-    logoConfig: createLogoConfig(3200, 1450),
+    placeholders: createPlaceholders(3000, 1180, 3000, 1300, { width: 900, textAlign: 'right' }),
+    logoConfig: createLogoConfig(3500, 1450, { textAlign: 'right' }),
   },
 ];
