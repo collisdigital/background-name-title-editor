@@ -74,21 +74,15 @@ export const useImageProcessor = (
   const updateText = (id: string, text: string) => {
     if (!fabricCanvas.current || !selectedImage) return;
     fabricService.updateText(fabricCanvas.current, selectedImage, id, text);
-    updateLayout();
+    // Layout update is now handled within fabricService.updateText for new items,
+    // and skipped for existing items to preserve user adjustments.
   };
 
   const updateCymraegStatus = async (status: 'None' | 'Learner' | 'Fluent') => {
     setCymraegStatus(status);
     if (!fabricCanvas.current || !selectedImage) return;
 
-    fabricService.removeLogo(fabricCanvas.current);
-
-    if (status !== 'None' && selectedImage.logoConfig) {
-      await fabricService.addLogo(fabricCanvas.current, selectedImage.logoConfig, status);
-      updateLayout();
-    } else {
-      fabricCanvas.current.requestRenderAll();
-    }
+    await fabricService.updateLogoStatus(fabricCanvas.current, selectedImage.logoConfig, status);
   };
 
   const selectImage = async (image: BackgroundImage, textValues: Record<string, string> = {}) => {
