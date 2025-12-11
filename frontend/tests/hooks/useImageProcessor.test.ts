@@ -105,9 +105,17 @@ describe('useImageProcessor', () => {
   });
 
   it('should scale image correctly on selectImage', async () => {
+    // Setup container
+    const container = document.createElement('div');
+    container.id = 'preview-container';
+    Object.defineProperty(container, 'clientWidth', { value: 1000 });
+    Object.defineProperty(container, 'clientHeight', { value: 500 });
+    document.body.appendChild(container);
+
     const canvasEl = document.createElement('canvas');
     Object.defineProperty(canvasEl, 'clientWidth', { value: 1000 });
     Object.defineProperty(canvasEl, 'clientHeight', { value: 500 });
+    // Note: In real app canvas is inside container, but here we just need container to exist for ID lookup
     const canvasRef = { current: canvasEl };
 
     const { result } = renderHook(() => useImageProcessor(canvasRef));
@@ -131,6 +139,9 @@ describe('useImageProcessor', () => {
       originX: 'center',
       originY: 'center',
     }));
+    
+    // Cleanup
+    document.body.removeChild(container);
   });
 
   it('should add logo when cymraegStatus is updated', async () => {
