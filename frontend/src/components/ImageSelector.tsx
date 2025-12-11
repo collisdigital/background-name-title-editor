@@ -45,26 +45,33 @@ const ImageSelector = ({ backgrounds, onSelect }: ImageSelectorProps) => {
 
   const allBackgrounds = [...customBackgrounds, ...backgrounds];
 
+  // Check for debug mode to enable custom uploads
+  const isDebug = new URLSearchParams(window.location.search).get('debug') === 'true';
+
   return (
     <div className="mb-6">
       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Select Background</h3>
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileUpload}
-        accept="image/png, image/jpeg, image/jpg"
-        className="hidden"
-        data-testid="file-upload"
-      />
+      {isDebug && (
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileUpload}
+          accept="image/png, image/jpeg, image/jpg"
+          className="hidden"
+          data-testid="file-upload"
+        />
+      )}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <button
-          onClick={triggerFileUpload}
-          className="flex flex-col items-center justify-center w-full aspect-video rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500 bg-gray-50 dark:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
-          aria-label="Upload custom background"
-        >
-          <span className="text-2xl mb-1">➕</span>
-          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Add New</span>
-        </button>
+        {isDebug && (
+          <button
+            onClick={triggerFileUpload}
+            className="flex flex-col items-center justify-center w-full aspect-video rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500 bg-gray-50 dark:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+            aria-label="Upload custom background"
+          >
+            <span className="text-2xl mb-1">➕</span>
+            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Add New</span>
+          </button>
+        )}
 
         {allBackgrounds.map((bg) => (
           <button
