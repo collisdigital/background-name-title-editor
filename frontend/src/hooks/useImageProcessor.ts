@@ -18,11 +18,24 @@ export const useImageProcessor = (
   const [imageLoadingError, setImageLoadingError] = useState<string | null>(null);
   const [cymraegStatus, setCymraegStatus] = useState<'None' | 'Learner' | 'Fluent'>('None');
 
-  // Callback to update layout when canvas resizes
-  const updateLayout = useCallback(() => {
-    if (fabricCanvas.current) {
-      fabricService.updateLayout(fabricCanvas.current);
+  // Callback to update layout and dimensions
+  const updateCanvasDimensions = useCallback(() => {
+    if (!fabricCanvas.current) return;
+    const container = document.getElementById('preview-container');
+    if (!container) return;
+
+    const width = container.clientWidth;
+    // Default to container height, but try to use aspect ratio if image exists
+    let height = container.clientHeight;
+
+    const bgImage = fabricCanvas.current.backgroundImage as fabric.FabricImage;
+    if (bgImage && bgImage.width && bgImage.height) {
+      const aspectRatio = bgImage.width / bgImage.height;
+      height = width / aspectRatio;
     }
+
+    fabricCanvas.current.setDimensions({ width, height });
+    fabricService.updateLayout(fabricCanvas.current);
   }, []);
 
   // Initialize Canvas and Resize Observer
@@ -39,17 +52,7 @@ export const useImageProcessor = (
       const resizeObserver = new ResizeObserver(() => {
         if (fabricCanvas.current && canvasElement) {
           requestAnimationFrame(() => {
-            if (!fabricCanvas.current || !canvasElement) return;
-
-            const container = document.getElementById('preview-container');
-            if (!container) return;
-
-            fabricCanvas.current.setDimensions({
-              width: container.clientWidth,
-              height: container.clientHeight,
-            });
-
-            updateLayout();
+            updateCanvasDimensions();
           });
         }
       });
@@ -69,7 +72,7 @@ export const useImageProcessor = (
         resizeObserver.disconnect();
       };
     }
-  }, [canvasRef, updateLayout]);
+  }, [canvasRef, updateCanvasDimensions]);
 
   const updateText = (id: string, text: string) => {
     if (!fabricCanvas.current || !selectedImage) return;
@@ -102,7 +105,7 @@ export const useImageProcessor = (
 
       setOriginalImageDimensions({ width: img.width, height: img.height });
       
-      updateLayout();
+      updateCanvasDimensions();
 
       // Re-add text
       Object.entries(textValues).forEach(([id, text]) => {
@@ -114,7 +117,7 @@ export const useImageProcessor = (
         await fabricService.addLogo(canvas, image.logoConfig, cymraegStatus);
       }
 
-      updateLayout();
+      updateCanvasDimensions();
       
     } catch (error) {
       console.error('Error loading image:', error);

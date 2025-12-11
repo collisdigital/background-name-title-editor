@@ -43,9 +43,9 @@ const HomePage = () => {
           imageLoadingError={imageLoadingError}
         />
         <div className="w-full md:w-2/3 lg:w-3/4">
-          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md h-full flex flex-col">
+          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col">
             <h2 className="text-xl font-semibold mb-4">Preview</h2>
-            <div className="flex-grow flex items-center justify-center bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-center bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
                <PreviewCanvas ref={canvasRef} />
             </div>
           </div>
