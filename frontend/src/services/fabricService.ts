@@ -62,6 +62,7 @@ export const fabricService = {
             left: imgLeft + (logoConfig.x + logoConfig.width) * scale + xOffset,
             top: imgTop + logoConfig.y * scale + yOffset,
             fontSize: baseFontSize * scale,
+            width: 50 * scale,
             scaleX: 1,
             scaleY: 1,
           });
@@ -142,6 +143,7 @@ export const fabricService = {
         textAlign: logoConfig.textAlign as 'left' | 'center' | 'right' | 'justify',
         originX: 'left',
         originY: 'top',
+        width: 50,
         lineHeight: 1.1,
       });
       (textObj as FabricObjectWithConfig)._logoConfig = logoConfig;
@@ -235,6 +237,7 @@ export const fabricService = {
         top: config.y + config.textYOffset,
         originX: 'left',
         originY: 'top',
+        width: 50,
         lineHeight: 1.1,
       });
       tempCanvas.add(textObj);
